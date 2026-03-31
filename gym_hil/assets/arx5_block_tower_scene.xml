@@ -1,0 +1,74 @@
+<mujoco model="ARX5 Block Tower Scene">
+  <include file="arx_l5/arx_l5.xml"/>
+
+  <option timestep=".002" noslip_iterations="5" noslip_tolerance="0"/>
+
+  <statistic center="0.15 0 0.15" extent="0.5"/>
+
+  <visual>
+    <headlight diffuse=".4 .4 .4" ambient=".5 .5 .5"/>
+    <global azimuth="160" elevation="-20" offheight="480" offwidth="640"/>
+    <quality offsamples="8"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1=".3 .5 .7" rgb2="0 0 0" width="32" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512"
+             rgb1=".1 .2 .3" rgb2=".2 .3 .4"/>
+    <material name="grid" texture="grid" texrepeat="2 2" texuniform="true" reflectance="0"/>
+  </asset>
+
+  <worldbody>
+    <!-- Cameras -->
+    <!-- <camera name="front" pos="0.0 -0.35 0.15" quat="0.757409 0.619062 -0.131374 -0.160733" fovy="60"/> -->
+  <camera name="front" pos="-0.285695 -0.331101 0.063825" xyaxes="0.422618 -0.906308 -0.000000 -0.098667 -0.046009 0.994056" fovy="60"/>
+
+
+    <!-- Lighting -->
+    <light pos="0 0 1.5" dir="0 0 -1" diffuse="1 1 1" specular=".3 .3 .3"/>
+    <light pos="0 -.3 .3" mode="targetbodycom" target="block1" diffuse=".8 .8 .8" specular=".3 .3 .3"/>
+
+    <!-- Floor -->
+    <geom name="floor" size="3 3 0.01" type="plane" material="grid"/>
+
+    <!-- Cube 1: Purple -->
+    <body name="block1" pos="0.18 -0.06 0.015">
+      <freejoint name="block1"/>
+      <geom name="block1" type="box" size=".015 .015 .015" mass="0.04"
+            rgba="0.6 0.2 0.8 1" friction="1.0 0.005 0.0001"/>
+    </body>
+
+    <!-- Cube 2: Green -->
+    <body name="block2" pos="0.18 0.06 0.015">
+      <freejoint name="block2"/>
+      <geom name="block2" type="box" size=".015 .015 .015" mass="0.04"
+            rgba="0.15 0.8 0.2 1" friction="1.0 0.005 0.0001"/>
+    </body>
+
+    <!-- Cube 3: Red -->
+    <body name="block3" pos="0.24 -0.03 0.015">
+      <freejoint name="block3"/>
+      <geom name="block3" type="box" size=".015 .015 .015" mass="0.04"
+            rgba="0.9 0.15 0.15 1" friction="1.0 0.005 0.0001"/>
+    </body>
+
+    <!-- Cube 4: Orange -->
+    <body name="block4" pos="0.24 0.03 0.015">
+      <freejoint name="block4"/>
+      <geom name="block4" type="box" size=".015 .015 .015" mass="0.04"
+            rgba="1.0 0.5 0.05 1" friction="1.0 0.005 0.0001"/>
+    </body>
+  </worldbody>
+
+  <!-- Block sensors -->
+  <sensor>
+    <framepos  name="block1_pos"  objtype="geom" objname="block1"/>
+    <framequat name="block1_quat" objtype="geom" objname="block1"/>
+    <framepos  name="block2_pos"  objtype="geom" objname="block2"/>
+    <framequat name="block2_quat" objtype="geom" objname="block2"/>
+    <framepos  name="block3_pos"  objtype="geom" objname="block3"/>
+    <framequat name="block3_quat" objtype="geom" objname="block3"/>
+    <framepos  name="block4_pos"  objtype="geom" objname="block4"/>
+    <framequat name="block4_quat" objtype="geom" objname="block4"/>
+  </sensor>
+</mujoco>

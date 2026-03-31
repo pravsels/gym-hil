@@ -282,6 +282,65 @@ class InputsControlWrapper(gym.Wrapper):
         return self.env.close()
 
 
+class CartesianToJointWrapper(gym.ActionWrapper):
+    """Converts Cartesian delta actions to joint position targets via Jacobian IK.
+
+    Input action: [dx, dy, dz, gripper_raw]
+      - dx, dy, dz in [-1, 1] scaled by step_scale
+      - gripper_raw in [0, 2] (from InputsControlWrapper: 0=close, 1=neutral, 2=open)
+
+    Output action: [joint1..joint6, gripper] position targets
+    """
+
+    def __init__(self, env, step_scale=0.02):
+        super().__init__(env)
+        self.step_scale = step_scale
+        self._gripper_range = np.array([
+            env.unwrapped.action_space.low[-1],
+            env.unwrapped.action_space.high[-1],
+        ])
+        self.action_space = gym.spaces.Box(
+            low=np.array([-1.0, -1.0, -1.0, 0.0], dtype=np.float32),
+            high=np.array([1.0, 1.0, 1.0, 2.0], dtype=np.float32),
+            dtype=np.float32,
+        )
+
+    def action(self, action):
+        import mujoco as mj
+
+        base_env = self.env.unwrapped
+        model = base_env._model
+        data = base_env._data
+
+        arm_joint_ids = base_env._obs_joint_ids[:6]
+        arm_dof_adrs = np.array([model.jnt_dofadr[jid] for jid in arm_joint_ids])
+
+        eef_site_id = mj.mj_name2id(model, mj.mjtObj.mjOBJ_SITE, "eef")
+
+        dx_cart = action[:3].astype(np.float64) * self.step_scale
+
+        J_pos = np.zeros((3, model.nv), dtype=np.float64)
+        mj.mj_jacSite(model, data, J_pos, None, eef_site_id)
+        J = J_pos[:, arm_dof_adrs]
+
+        dq, _, _, _ = np.linalg.lstsq(J, dx_cart, rcond=None)
+
+        q_current = data.qpos[arm_joint_ids].copy()
+        q_target = q_current + dq
+        arm_low = base_env.action_space.low[:6]
+        arm_high = base_env.action_space.high[:6]
+        q_target = np.clip(q_target, arm_low, arm_high)
+
+        gripper_raw = action[3]
+        gripper_frac = gripper_raw / 2.0
+        gripper_target = (
+            self._gripper_range[0]
+            + gripper_frac * (self._gripper_range[1] - self._gripper_range[0])
+        )
+
+        return np.concatenate([q_target, [gripper_target]]).astype(np.float32)
+
+
 class ResetDelayWrapper(gym.Wrapper):
     """
     Wrapper that adds a time delay when resetting the environment.

@@ -4,9 +4,11 @@ from typing import TypedDict
 
 import gymnasium as gym
 
+from gym_hil.envs.arx5_block_tower_gym_env import Arx5BlockTowerGymEnv
 from gym_hil.envs.panda_arrange_boxes_gym_env import PandaArrangeBoxesGymEnv
 from gym_hil.envs.panda_pick_gym_env import PandaPickCubeGymEnv
 from gym_hil.wrappers.hil_wrappers import (
+    CartesianToJointWrapper,
     DEFAULT_EE_STEP_SIZE,
     EEActionWrapper,
     GripperPenaltyWrapper,
@@ -84,6 +86,38 @@ def wrap_env(
     return env
 
 
+def wrap_arx5_env(
+    env: gym.Env,
+    use_viewer: bool = False,
+    use_gamepad: bool = False,
+    use_inputs_control: bool = False,
+    auto_reset: bool = False,
+    show_ui: bool = True,
+    reset_delay_seconds: float = 1.0,
+    controller_config_path: str | None = None,
+) -> gym.Env:
+    """Apply wrappers suitable for ARX5 environments (joint position control)."""
+    env = CartesianToJointWrapper(env)
+
+    if use_inputs_control:
+        env = InputsControlWrapper(
+            env,
+            x_step_size=1.0,
+            y_step_size=1.0,
+            z_step_size=1.0,
+            use_gripper=True,
+            auto_reset=auto_reset,
+            use_gamepad=use_gamepad,
+            controller_config_path=controller_config_path,
+        )
+
+    if use_viewer:
+        env = PassiveViewerWrapper(env, show_left_ui=show_ui, show_right_ui=show_ui)
+
+    env = ResetDelayWrapper(env, delay_seconds=reset_delay_seconds)
+    return env
+
+
 def make_env(
     env_id: str,
     ee_step_size: EEActionStepSize | None = None,
@@ -122,6 +156,18 @@ def make_env(
         env = PandaPickCubeGymEnv(**kwargs)
     elif env_id == "gym_hil/PandaArrangeBoxesBase-v0":
         env = PandaArrangeBoxesGymEnv(**kwargs)
+    elif env_id == "gym_hil/Arx5BlockTowerBase-v0":
+        env = Arx5BlockTowerGymEnv(**kwargs)
+        return wrap_arx5_env(
+            env,
+            use_viewer=use_viewer,
+            use_gamepad=use_gamepad,
+            use_inputs_control=use_inputs_control,
+            auto_reset=auto_reset,
+            show_ui=show_ui,
+            reset_delay_seconds=reset_delay_seconds,
+            controller_config_path=controller_config_path,
+        )
     else:
         raise ValueError(f"Environment ID {env_id} not supported")
 

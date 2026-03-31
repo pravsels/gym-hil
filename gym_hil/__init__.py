@@ -16,6 +16,7 @@
 
 import gymnasium as gym
 
+from gym_hil.arx5_gym_env import Arx5GymEnv
 from gym_hil.mujoco_gym_env import FrankaGymEnv, GymRenderingSpec, MujocoGymEnv
 from gym_hil.wrappers.factory import make_env, wrap_env
 from gym_hil.wrappers.viewer_wrapper import PassiveViewerWrapper
@@ -23,6 +24,7 @@ from gym_hil.wrappers.viewer_wrapper import PassiveViewerWrapper
 __all__ = [
     "MujocoGymEnv",
     "FrankaGymEnv",
+    "Arx5GymEnv",
     "GymRenderingSpec",
     "PassiveViewerWrapper",
     "make_env",
@@ -123,5 +125,35 @@ register(
         "use_viewer": True,
         "gripper_penalty": -0.05,
         "use_inputs_control": True,
+    },
+)
+
+register(
+    id="gym_hil/Arx5BlockTowerBase-v0",
+    entry_point="gym_hil.envs:Arx5BlockTowerGymEnv",
+    max_episode_steps=500,
+)
+
+register(
+    id="gym_hil/Arx5BlockTowerGamepad-v0",
+    entry_point="gym_hil.wrappers.factory:make_env",
+    max_episode_steps=200,
+    kwargs={
+        "env_id": "gym_hil/Arx5BlockTowerBase-v0",
+        "use_viewer": True,
+        "use_inputs_control": True,
+        "use_gamepad": True,
+    },
+)
+
+register(
+    id="gym_hil/Arx5BlockTowerKeyboard-v0",
+    entry_point="gym_hil.wrappers.factory:make_env",
+    max_episode_steps=200,
+    kwargs={
+        "env_id": "gym_hil/Arx5BlockTowerBase-v0",
+        "use_viewer": True,
+        "use_inputs_control": True,
+        "use_gamepad": False,
     },
 )

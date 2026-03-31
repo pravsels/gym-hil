@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from gym_hil.envs.arx5_block_tower_gym_env import Arx5BlockTowerGymEnv
 from gym_hil.envs.panda_arrange_boxes_gym_env import PandaArrangeBoxesGymEnv
 from gym_hil.envs.panda_pick_gym_env import PandaPickCubeGymEnv
 
-__all__ = ["PandaPickCubeGymEnv", "PandaArrangeBoxesGymEnv"]
+__all__ = ["PandaPickCubeGymEnv", "PandaArrangeBoxesGymEnv", "Arx5BlockTowerGymEnv"]
