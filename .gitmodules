@@ -2,3 +2,7 @@
 	path = external/rewact
 	url = git@github.com:pravsels/rewact.git
 	branch = main
+[submodule "external/robocandywrapper"]
+	path = external/robocandywrapper
+	url = https://github.com/villekuosmanen/RoboCandyWrapper.git
+	branch = main
