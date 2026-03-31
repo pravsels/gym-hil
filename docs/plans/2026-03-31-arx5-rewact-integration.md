@@ -23,14 +23,14 @@
 ## Task 1: Install Dependencies
 
 **Files:**
-- Clone: `../rewact/` (sibling to gym-hil)
+- Use: `external/rewact/` (git submodule inside gym-hil)
 - Modify: nothing
 
-**Step 1: Clone rewact**
+**Step 1: Initialize rewact submodule**
 
 ```bash
-cd /home/user/Desktop/code
-git clone https://github.com/pravsels/rewact
+cd /home/user/Desktop/code/gym-hil
+git submodule update --init --recursive external/rewact
 ```
 
 **Step 2: Install LeRobot**
@@ -44,9 +44,9 @@ rewact is a LeRobot plugin (not a patch). The README describes standalone instal
 **Step 3: Install rewact packages**
 
 ```bash
-cd /home/user/Desktop/code/rewact/rewact_tools
+cd /home/user/Desktop/code/gym-hil/external/rewact/rewact_tools
 pip install -e .
-cd /home/user/Desktop/code/rewact/lerobot_policy_rewact
+cd /home/user/Desktop/code/gym-hil/external/rewact/lerobot_policy_rewact
 pip install -e .
 ```
 

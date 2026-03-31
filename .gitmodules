@@ -1,0 +1,4 @@
+[submodule "external/rewact"]
+	path = external/rewact
+	url = git@github.com:pravsels/rewact.git
+	branch = main
