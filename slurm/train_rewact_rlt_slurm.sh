@@ -24,6 +24,7 @@ data_dir="${scratch_dir}/gym-hil"
 container="${data_dir}/container/gym_hil_rewact_arm64.sif"
 config_file="${rewact_dir}/configs/train_rlt.yaml"
 output_dir="${data_dir}/outputs/rewact_rlt_build_block_tower"
+python_pkg_root="${data_dir}/python_packages"
 hf_cache="${scratch_dir}/huggingface_cache"
 wandb_dir="${data_dir}/wandb"
 wandb_cache_dir="${scratch_dir}/.cache/wandb"
@@ -36,6 +37,11 @@ home_token_file="${home_dir}/.hf_token"
 extra_train_args="${EXTRA_TRAIN_ARGS:-}"
 resume_args=""
 
+rewact_rev="$(git -C "${rewact_dir}" rev-parse HEAD)"
+robocandy_rev="$(git -C "${repo_dir}/external/robocandywrapper" rev-parse HEAD)"
+python_pkg_dir="${python_pkg_root}/${rewact_rev}-${robocandy_rev}"
+python_pkg_stamp="${python_pkg_dir}/.install-complete"
+
 if [ -n "${LOAD_CKPT_PATH:-}" ]; then
     resume_args="--resume=true --checkpoint_path=${LOAD_CKPT_PATH}"
 fi
@@ -43,6 +49,7 @@ fi
 mkdir -p \
     "${data_dir}/container" \
     "${output_dir}" \
+    "${python_pkg_root}" \
     "${hf_cache}" \
     "${wandb_dir}" \
     "${wandb_cache_dir}" \
@@ -100,6 +107,7 @@ echo "Extra train args: ${extra_train_args:-<none>}"
 echo "===================================="
 
 train_cmd="python scripts/train.py --config=configs/train_rlt.yaml --policy.device=cuda --output_dir=${output_dir} ${resume_args} ${extra_train_args}"
+install_cmd="mkdir -p ${python_pkg_dir} && rm -rf ${python_pkg_dir:?}/* && python -m pip install --no-deps --upgrade --target ${python_pkg_dir} ${rewact_dir}/rewact_tools ${rewact_dir}/lerobot_policy_rewact ${rewact_dir}/lerobot_policy_actvantage ${repo_dir}/external/robocandywrapper"
 
 export_cmds="export PYTHONUNBUFFERED=1"
 export_cmds="${export_cmds} && export WANDB_MODE=offline"
@@ -112,7 +120,7 @@ export_cmds="${export_cmds} && export TORCH_HOME=${torch_home}"
 export_cmds="${export_cmds} && export HF_HOME=/root/.cache/huggingface"
 export_cmds="${export_cmds} && export HF_TOKEN=\$(cat ${token_file})"
 export_cmds="${export_cmds} && export HUGGING_FACE_HUB_TOKEN=\${HF_TOKEN}"
-export_cmds="${export_cmds} && export PYTHONPATH=${rewact_dir}/lerobot_policy_rewact/src:${rewact_dir}/rewact_tools/src:${rewact_dir}/lerobot_policy_actvantage/src:${repo_dir}/external/robocandywrapper:\${PYTHONPATH:-}"
+export_cmds="${export_cmds} && export PYTHONPATH=${python_pkg_dir}:\${PYTHONPATH:-}"
 
 echo "Running training command..."
 echo "Command: ${train_cmd}"
@@ -127,7 +135,7 @@ apptainer exec --nv \
     --bind "${hf_cache}:/root/.cache/huggingface" \
     --env "HF_HOME=/root/.cache/huggingface" \
     "${container}" \
-    bash -lc "${export_cmds} && ${train_cmd}"
+    bash -lc "${export_cmds} && if [ ! -f \"${python_pkg_stamp}\" ]; then ${install_cmd} && date -Is > \"${python_pkg_stamp}\"; fi && ${train_cmd}"
 exit_code=$?
 set -e
 
