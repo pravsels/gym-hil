@@ -107,7 +107,7 @@ echo "Extra train args: ${extra_train_args:-<none>}"
 echo "===================================="
 
 train_cmd="python scripts/train.py --config=configs/train_rlt.yaml --policy.device=cuda --output_dir=${output_dir} ${resume_args} ${extra_train_args}"
-install_cmd="mkdir -p ${python_pkg_dir} && rm -rf ${python_pkg_dir:?}/* && python -m pip install --no-deps --upgrade --target ${python_pkg_dir} ${rewact_dir}/rewact_tools ${rewact_dir}/lerobot_policy_rewact ${rewact_dir}/lerobot_policy_actvantage ${repo_dir}/external/robocandywrapper"
+install_cmd="mkdir -p ${python_pkg_dir} && rm -rf ${python_pkg_dir:?}/* && python -m pip install --no-deps --upgrade --target ${python_pkg_dir} ${rewact_dir}/rewact_tools ${rewact_dir}/lerobot_policy_rewact ${rewact_dir}/lerobot_policy_actvantage ${repo_dir}/external/robocandywrapper && python -m pip install --no-deps --target ${python_pkg_dir} --index-url https://download.pytorch.org/whl/cu126 torch==2.6.0 torchvision==0.21.0"
 
 export_cmds="export PYTHONUNBUFFERED=1"
 export_cmds="${export_cmds} && export WANDB_MODE=offline"

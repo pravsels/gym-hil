@@ -31,8 +31,6 @@ RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 
 RUN python -m pip install --upgrade pip setuptools wheel
 
-RUN python -m pip install --index-url https://download.pytorch.org/whl/cu124 torch torchvision
-
 RUN python -m pip install \
     "lerobot>=0.4,<0.5" \
     av \
@@ -51,5 +49,11 @@ RUN python -m pip install \
     scipy \
     termcolor \
     wandb
+
+# Reinstall torch with CUDA after lerobot — lerobot pulls CPU-only torch from
+# PyPI on aarch64. The cu126 index is the earliest with aarch64 CUDA wheels.
+RUN python -m pip install --force-reinstall --no-deps \
+    --index-url https://download.pytorch.org/whl/cu126 \
+    torch==2.6.0 torchvision==0.21.0
 
 WORKDIR /workspace
